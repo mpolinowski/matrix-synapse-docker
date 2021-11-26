@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+    proxy:
+        image: "jwilder/nginx-proxy"
+        container_name: "proxy"
+        volumes:
+            - "certs:/etc/nginx/certs"
+            - "vhost:/etc/nginx/vhost.d"
+            - "html:/usr/share/nginx/html"
+            - "/run/docker.sock:/tmp/docker.sock:ro"
+            - ./synapse-federation:/etc/nginx/vhost.d/sub.domain.com
+        networks: ["matrix"]
+        restart: "always"
+        ports:
+            - "80:80"
+            - "443:443"
+
+    letsencrypt:
+        image: "jrcs/letsencrypt-nginx-proxy-companion"
+        container_name: "letsencrypt"
+        volumes:
+            - "certs:/etc/nginx/certs"
+            - "vhost:/etc/nginx/vhost.d"
+            - "html:/usr/share/nginx/html"
+            - "/run/docker.sock:/var/run/docker.sock:ro"
+            - ./synapse-federation:/etc/nginx/vhost.d/sub.domain.com
+        environment:
+            NGINX_PROXY_CONTAINER: "proxy"
+        networks: ["matrix"]
+        restart: "always"
+        depends_on: ["proxy"]
+
+networks:
+    matrix:
+        external: true
+
+volumes:
+    certs:
+    vhost:
+    html:

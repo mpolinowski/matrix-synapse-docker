@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+    synapse:
+        image: "matrixdotorg/synapse:latest"
+        container_name: "synapse"
+        volumes:
+            - "./data:/data"
+        environment:
+            # Replace this with your domain
+            VIRTUAL_HOST: "sub.domain.com"
+            VIRTUAL_PORT: 8008
+            # Replace this with your domain
+            LETSENCRYPT_HOST: "sub.domain.com"
+            # Replace this with your domain
+            SYNAPSE_SERVER_NAME: "sub.domain.com"
+            SYNAPSE_REPORT_STATS: "yes"
+        networks: ["matrix"]
+
+    postgresql:
+        image: postgres:latest
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: SUPERSECRETPASSWORD
+            POSTGRES_USER: synapse
+            POSTGRES_DB: synapse
+            POSTGRES_INITDB_ARGS: "--encoding='UTF8' --lc-collate='C' --lc-ctype='C'"
+        volumes:
+            - "postgresdata:/var/lib/postgresql/"
+        networks: ["matrix"]
+
+volumes:
+    postgresdata:
+
+
+networks:
+    matrix:
+        external: true
